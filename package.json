@@ -1,0 +1,28 @@
+{
+  "name": "node-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "repository": "git@github.com:Subhankur/node-service.git",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@fastify/type-provider-typebox": "^6.3.0",
+    "ajv-formats": "^3.0.1",
+    "fastify": "^5.12.8",
+    "typebox": "^1.4.6"
+  },
+  "devDependencies": {
+    "@types/node": "24",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit"
+  }
+}
