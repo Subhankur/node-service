@@ -1,5 +1,6 @@
 import fastify from "fastify";
 import { Type, TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import { notesRoutes } from "./routes/notes.js";
 
 export function buildApp() {
   const app = fastify({
@@ -22,6 +23,8 @@ export function buildApp() {
       return reply.status(200).send({status: 'ok' as const});
     }
   });
+
+  app.register(notesRoutes, { prefix: "/notes" });
 
   return app;
 }
