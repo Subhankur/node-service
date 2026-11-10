@@ -11,8 +11,9 @@ export function buildApp() {
   app.setNotFoundHandler(notFoundHandler);
   app.setErrorHandler(errorHandler);
 
-  app.addHook('onSend', (request, reply) => {
-    return reply.header('x-request-id', request.id)
+  app.addHook('onSend', async (request, reply, payload) => {
+    reply.header('x-request-id', request.id);
+    return payload;
   });
 
   app.get('/', (request, reply) => {
