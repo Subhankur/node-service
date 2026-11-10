@@ -1,23 +1,6 @@
-import { FastifyPluginAsyncTypebox, Static, Type } from "@fastify/type-provider-typebox";
+import { FastifyPluginAsyncTypebox, Type } from "@fastify/type-provider-typebox";
+import { ErrorSchema, Note, NoteSchema, EmptyResponse } from "../schema.js";
 
-const ErrorResponse404 = Type.Object({
-  message: Type.Literal('Not found')
-});
-
-const ErrorResponse400 = Type.Object({
-  message: Type.String()
-});
-
-const SuccessResponse204 = Type.Null();
-
-
-const NotesSchema = Type.Object({
-    id: Type.String({format: 'uuid'}),
-    text: Type.String(),
-    createdAt: Type.String({format: 'date-time'})
-})
-
-type Note = Static<typeof NotesSchema>;
 
 export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
     const notes = new Map<string, Note>();
@@ -25,7 +8,7 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
     app.get('/', {
         schema: {
             response: {
-                200: Type.Array(NotesSchema),
+                200: Type.Array(NoteSchema),
             }
         },
         handler: async (request, reply) => {
@@ -36,9 +19,9 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
     app.get("/:id", {
         schema: {
             response: {
-                200: NotesSchema,
-                400: ErrorResponse400,
-                404: ErrorResponse404,
+                200: NoteSchema,
+                400: ErrorSchema,
+                404: ErrorSchema,
             },
             params: Type.Object({
                 id: Type.String({format: 'uuid'})
@@ -50,7 +33,7 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
             const note = notes.get(id);
 
             if(!note) {
-                return reply.status(404).send({message: 'Not found'});
+                return reply.status(404).send({message: 'Not Found', error: 'Not Found', statusCode: 404});
             }
 
             return reply.status(200).send(note);
@@ -63,9 +46,9 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
                 id: Type.String({format: 'uuid'})
             }),
             response: {
-                204: SuccessResponse204,
-                400: ErrorResponse400,
-                404: ErrorResponse404,
+                204: EmptyResponse,
+                400: ErrorSchema,
+                404: ErrorSchema,
             }
         },
         handler: async (request, reply) => {
@@ -73,7 +56,7 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
 
 
             if(!notes.has(id)) {
-                return reply.status(404).send({message: 'Not found'})
+                return reply.status(404).send({message: 'Not Found', error: 'Not Found', statusCode: 404});
             }
 
             notes.delete(id);
@@ -91,8 +74,8 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
                 {minItems: 1, maxItems: 100}
             ),
             response: {
-                201: Type.Array(NotesSchema),
-                400: ErrorResponse400,
+                201: Type.Array(NoteSchema),
+                400: ErrorSchema,
             }
         },
         handler: async(request, reply) => {
