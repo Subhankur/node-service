@@ -1,0 +1,55 @@
+Tasks (in order, commit each)
+
+1. Shared schemas file
+   Create src/schemas.ts with:
+   - A single ErrorSchema: { statusCode: number, error: string, message: string }
+   - NoteSchema
+   Import them in notes.ts and delete the duplicate error schemas there.
+   Use one error shape across every route.
+
+2. Global error handler
+   In app.ts, add app.setErrorHandler(...) and make it produce your ErrorSchema shape for:
+   - Validation errors. Check error.validation and return 400 with a readable message.
+   - Errors that carry a statusCode, such as invalid JSON, which is a 400 from Fastify's body parser.
+   - Anything else. Return 500 with a generic message, and log the real error with request.log.error(error).
+     Never send error.stack or the internal message to the client.
+
+3. Not-found handler
+   Add app.setNotFoundHandler(...) that returns your error shape for unknown routes like GET /nope.
+
+4. Prove the 500 path
+   Temporarily add a route that throws new Error('boom').
+   Confirm the client gets a clean 500 and the log shows the real error.
+   Then remove the route.
+
+5. Hooks
+   Add a hook in app.ts that logs a line when each request finishes, with method, URL, status code, and response time.
+   Use onResponse, and read reply.statusCode and reply.elapsedTime.
+   Don't use console.log. Use request.log.
+
+6. Request id
+   Fastify already creates a request id.
+   Return it to clients in an x-request-id response header using an onSend hook.
+   Then find the same id in your logs.
+   This is how you trace a user's complaint to a specific log line in production.
+
+Experiments (tell me what you observe)
+
+- POST invalid JSON ({bad) to /notes.
+  Which hook, if any, runs, and what status code do you get?
+
+- Put a console.log in onRequest, preValidation, preHandler, and your handler.
+  Send a request with an invalid body.
+  Which logs appear, and in what order?
+
+- Throw inside an onRequest hook.
+  Does the route handler run?
+
+- Return a field not in the response schema, then check if it reaches the client.
+
+Concepts to read first
+
+- Fastify Lifecycle (the diagram) and Hooks.
+- Fastify Errors, in particular setErrorHandler and what error.validation looks like.
+- The difference between a 4xx (client's fault) and a 5xx (our fault).
+  It decides what you log, what you alert on, and what you reveal.

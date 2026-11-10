@@ -1,5 +1,6 @@
 import { FastifyPluginAsyncTypebox, Type } from "@fastify/type-provider-typebox";
 import { ErrorSchema, Note, NoteSchema, EmptyResponse } from "../schema.js";
+import { HttpError } from "../error.js";
 
 
 export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
@@ -20,8 +21,6 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
         schema: {
             response: {
                 200: NoteSchema,
-                400: ErrorSchema,
-                404: ErrorSchema,
             },
             params: Type.Object({
                 id: Type.String({format: 'uuid'})
@@ -33,7 +32,7 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
             const note = notes.get(id);
 
             if(!note) {
-                return reply.status(404).send({message: 'Not Found', error: 'Not Found', statusCode: 404});
+                throw new HttpError(404, 'Note not Found');
             }
 
             return reply.status(200).send(note);
@@ -47,8 +46,6 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
             }),
             response: {
                 204: EmptyResponse,
-                400: ErrorSchema,
-                404: ErrorSchema,
             }
         },
         handler: async (request, reply) => {
@@ -56,7 +53,7 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
 
 
             if(!notes.has(id)) {
-                return reply.status(404).send({message: 'Not Found', error: 'Not Found', statusCode: 404});
+                throw new HttpError(404, 'Note not Found');
             }
 
             notes.delete(id);
@@ -75,7 +72,6 @@ export const notesRoutes: FastifyPluginAsyncTypebox = async (app) => {
             ),
             response: {
                 201: Type.Array(NoteSchema),
-                400: ErrorSchema,
             }
         },
         handler: async(request, reply) => {
