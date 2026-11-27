@@ -16,9 +16,6 @@ export function buildApp() {
     return payload;
   });
 
-  app.get('/', (request, reply) => {
-    reply.send('Hello World');
-  });
 
   app.get('/health', {
     schema: {
@@ -32,6 +29,25 @@ export function buildApp() {
       return reply.status(200).send({status: 'ok' as const});
     }
   });
+
+  app.get('/wait', {
+    schema: {
+      response: {
+        200: Type.Object({
+          status: Type.Literal('ok'),
+          sum: Type.Number()
+        })
+      }
+    },
+    handler: async (_, res) => {
+      let sum = 0;
+        for(let i=0; i<5000000000000000; i++) {
+          sum += i;
+        }
+
+        return res.status(200).send({status: 'ok', sum})
+    }
+  })
 
   app.register(notesRoutes, { prefix: "/notes" });
 
